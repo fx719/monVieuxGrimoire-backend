@@ -1,9 +1,8 @@
 import express from 'express'
+import { signUp } from '../controllers/auth.js'
 
 export const router = express.Router()
 
-router.get('/signup', (req, res) => {
-    res.status(200).json({ message: "route signup" })
-})
+router.post('/signup', signUp)
 
 

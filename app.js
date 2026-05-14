@@ -8,6 +8,8 @@ import { router as booksRouter } from './routes/books.js'
 export const app = express()
 loadEnvFile('./config/.env')
 
+app.use(express.json())
+
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('connexion MongoDd reussie'))
     .catch(() => console.log('connexion MongoDd echouee'))
