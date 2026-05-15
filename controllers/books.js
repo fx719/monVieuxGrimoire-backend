@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import { Book } from '../models/Book.js'
 
 export const getBooks = (req, res, next) => {
     const mockUpBooks = [
@@ -44,4 +45,15 @@ export const getBooks = (req, res, next) => {
         }
     ]
     res.status(200).json(mockUpBooks)
+}
+
+
+export const createBook = async (req, res) => {
+    try {
+        const bookCover = req.file
+        console.log(bookCover)
+        res.status(201).json({ message: "upload reussi" })
+    } catch (error) {
+        console.error(error)
+    }
 }
