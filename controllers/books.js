@@ -1,59 +1,39 @@
-import mongoose from "mongoose"
 import { Book } from '../models/Book.js'
+import * as fs from 'node:fs/promises'
 
 export const getBooks = (req, res, next) => {
-    const mockUpBooks = [
-        {
-            _id: '1',
-            userId: '17',
-            title: "livre 1",
-            author: "user1",
-            imageUrl: "google.com",
-            year: 1992,
-            genre: "policier",
-            ratings: [
-                {
-                    userId: "user2",
-                    grade: 5
-                },
-                {
-                    userId: "user3",
-                    grade: 3
-                }
-            ],//notes données à un livre
-            averageRating: 4
-        },
-        {
-            _id: '2',
-            userId: '19',
-            title: "livre 2",
-            author: "user2",
-            imageUrl: "google.com",
-            year: 1995,
-            genre: "romance",
-            ratings: [
-                {
-                    userId: "user1",
-                    grade: 2
-                },
-                {
-                    userId: "user3",
-                    grade: 2
-                }
-            ],//notes données à un livre
-            averageRating: 2
-        }
-    ]
-    res.status(200).json(mockUpBooks)
+    try {
+        res.status(200).json({ message: "livres affichés" })
+    } catch (error) {
+        console.error(error)
+    }
 }
 
 
 export const createBook = async (req, res) => {
     try {
+
         const bookCover = req.file
-        console.log(bookCover)
-        res.status(201).json({ message: "upload reussi" })
+        const loggedInUserId = req.auth.userId
+        const bookInfo = JSON.parse(req.body.book)
+        delete bookInfo.userId
+        delete bookInfo.ratings[0].userId
+        bookInfo.userId = loggedInUserId
+        bookInfo.ratings[0].userId = loggedInUserId
+        const uploadedBook = new Book({
+            ...bookInfo,
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${bookCover.filename}`
+        })
+
+        uploadedBook.save()
+            .then(() => res.status(201).json({ message: "Livre ajouté avec succès" }))
+            .catch(async (error) => {
+                await fs.unlink(`./images/${bookCover.filename}`)
+                res.status(400).json({ error })
+            })
+
     } catch (error) {
-        console.error(error)
+        res.status(400).json({ error })
+
     }
 }
