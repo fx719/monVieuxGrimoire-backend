@@ -3,11 +3,24 @@ import * as fs from 'node:fs/promises'
 import { fileTypeFromBuffer } from 'file-type'
 import * as crypto from 'node:crypto'
 
-export const getBooks = async (req, res, next) => {
+export const getBooks = (req, res, next) => {
     try {
         Book.find()
             .then((books) => res.status(200).json(books))
             .catch((error) => res.status(404).json({ error }))
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+export const getBook = (req, res, next) => {
+    try {
+        const bookId = req.params.id
+
+        Book.findById(bookId)
+            .then((book) => res.status(200).json(book))
+            .catch((error) => res.status(404).json(error))
+
     } catch (error) {
         console.error(error)
     }
