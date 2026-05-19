@@ -3,9 +3,11 @@ import * as fs from 'node:fs/promises'
 import { fileTypeFromBuffer } from 'file-type'
 import * as crypto from 'node:crypto'
 
-export const getBooks = (req, res, next) => {
+export const getBooks = async (req, res, next) => {
     try {
-        res.status(200).json({ message: "livres affichés" })
+        Book.find()
+            .then((books) => res.status(200).json(books))
+            .catch((error) => res.status(404).json({ error }))
     } catch (error) {
         console.error(error)
     }

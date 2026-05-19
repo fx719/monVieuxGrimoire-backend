@@ -1,4 +1,6 @@
 import express from 'express'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { loadEnvFile } from 'node:process'
 import mongoose from 'mongoose'
 import { router as authRouter } from './routes/auth.js'
@@ -6,6 +8,7 @@ import { router as booksRouter } from './routes/books.js'
 
 
 export const app = express()
+const rootDir = dirname(fileURLToPath(import.meta.url))
 loadEnvFile('./config/.env')
 
 app.use(express.json())
@@ -23,6 +26,9 @@ app.use((req, res, next) => {
 
 app.use('/api/books', booksRouter)
 app.use('/api/auth', authRouter)
+
+
+app.use('/images', express.static(join(rootDir, 'images')))
 
 
 app.get('/', (req, res) => {
