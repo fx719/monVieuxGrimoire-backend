@@ -6,13 +6,20 @@ import mongoose from 'mongoose'
 import { router as authRouter } from './routes/auth.js'
 import { router as booksRouter } from './routes/books.js'
 import helmet from "helmet"
+import { rateLimit } from 'express-rate-limit'
 
 
 export const app = express()
 const rootDir = dirname(fileURLToPath(import.meta.url))
+const limiter = rateLimit({
+    //200 requests per Ip, during 15 minutes
+    windowMs: 15 * 60 * 1000,
+    limit: 200
+})
 loadEnvFile('./config/.env')
 
 app.use(helmet({ crossOriginResourcePolicy: false }))
+app.use(limiter)
 app.use(express.json())
 
 mongoose.connect(process.env.MONGO_URI)
