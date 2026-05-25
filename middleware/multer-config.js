@@ -6,7 +6,7 @@ const storage = multer.memoryStorage({
     }
 })
 
-export const uploadMiddleware = multer({ storage: storage }).single('image')
+export const uploadMiddleware = multer({ storage: storage, limits: { fileSize: 2097152 } }).single('image')
 
 
 
