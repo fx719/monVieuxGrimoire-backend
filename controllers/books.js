@@ -1,7 +1,8 @@
 import { Book } from '../models/Book.js'
-import * as fs from 'node:fs/promises'
 import { fileTypeFromBuffer } from 'file-type'
-import * as crypto from 'node:crypto'
+import sharp from 'sharp'
+
+const fileRenamer = await import('node:crypto')
 
 export const getBooks = (req, res, next) => {
     try {
@@ -31,7 +32,7 @@ export const createBook = async (req, res) => {
     try {
 
         const bookCover = req.file
-        const newFileName = Date.now() + bookCover.originalname.trim()
+        const newFileName = fileRenamer.randomUUID()
         const type = await fileTypeFromBuffer(bookCover.buffer)
 
         if (type.mime !== "image/jpg" && type.mime !== "image/jpeg" && type.mime !== "image/png") {
@@ -46,17 +47,18 @@ export const createBook = async (req, res) => {
         bookInfo.ratings[0].userId = loggedInUserId
         const uploadedBook = new Book({
             ...bookInfo,
-            imageUrl: `${req.protocol}://${req.get('host')}/images/${newFileName}`
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${newFileName}.webp`
         })
 
         uploadedBook.save()
             .then(async (book) => {
-                await fs.writeFile(`images/${newFileName}`, bookCover.buffer)
+                await sharp(bookCover.buffer).resize(400, 600, { fit: 'outside' }).toFile(`images/${newFileName}.webp`)
                 res.status(201).json({ message: "Livre ajouté avec succès" })
             })
             .catch((error) => {
                 res.status(400).json({ error: 'Les données ne sont pas au bon format' })
             })
+
 
     } catch (error) {
         res.status(400).json({ error: "Les données ne sont pas au bon format / des champs sont vides" })
