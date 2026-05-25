@@ -5,12 +5,14 @@ import { loadEnvFile } from 'node:process'
 import mongoose from 'mongoose'
 import { router as authRouter } from './routes/auth.js'
 import { router as booksRouter } from './routes/books.js'
+import helmet from "helmet"
 
 
 export const app = express()
 const rootDir = dirname(fileURLToPath(import.meta.url))
 loadEnvFile('./config/.env')
 
+app.use(helmet({ crossOriginResourcePolicy: false }))
 app.use(express.json())
 
 mongoose.connect(process.env.MONGO_URI)
