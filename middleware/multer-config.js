@@ -6,16 +6,7 @@ const storage = multer.memoryStorage({
     }
 })
 
-export const uploadMiddleware = multer({
-    storage: storage, fileFilter: (req, file, callback) => {
-
-        if (file.mimetype !== "image/jpg" && file.mimetype !== "image/jpeg" && file.mimetype !== "image/png") {
-            return callback(new Error('Erreur dans le format du fichier'))
-        } else {
-            callback(null, true)
-        }
-    }
-}).single('image')
+export const uploadMiddleware = multer({ storage: storage }).single('image')
 
 
 

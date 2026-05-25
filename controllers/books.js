@@ -35,7 +35,7 @@ export const createBook = async (req, res) => {
         const type = await fileTypeFromBuffer(bookCover.buffer)
 
         if (type.mime !== "image/jpg" && type.mime !== "image/jpeg" && type.mime !== "image/png") {
-            throw new Error('Erreur dans le format de fichier')
+            res.status(400).json({ error: 'Mauvais format de fichier' })
         }
 
         const loggedInUserId = req.auth.userId
@@ -59,7 +59,7 @@ export const createBook = async (req, res) => {
             })
 
     } catch (error) {
-        res.status(400).json({ error })
+        res.status(400).json({ error: "Les données ne sont pas au bon format / des champs sont vides" })
 
     }
 }

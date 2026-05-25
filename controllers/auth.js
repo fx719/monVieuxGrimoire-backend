@@ -16,11 +16,11 @@ export const signUp = async (req, res) => {
             await user.save()
             res.status(201).json({ message: "Utilisateur crée avec succès" })
         } else {
-            throw new Error('Le mot de passe doit comporter au moins 8 caractères, dont au moins 1 lettre minuscule, 1 majuscule, 1 chiffre et un caractère spécial')
+            throw new Error("Le mot de passe doit contenir au moins 8 caractères, dont au moins un signe spécial -$ par exemple-, un chiffre, une lettre minuscule et une lettre majuscule")
         }
 
     } catch (error) {
-        console.error(error)
+        res.status(400).json({ error })
     }
 
 }
@@ -52,6 +52,6 @@ export const login = async (req, res) => {
         res.status(200).json(loggedInUser)
 
     } catch (error) {
-        console.error(error)
+        res.status(400).json({ error: "Combinaison identifiants/mot de passe incorrecte" })
     }
 }

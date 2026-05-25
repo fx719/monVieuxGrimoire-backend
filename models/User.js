@@ -12,6 +12,9 @@ const userSchema = mongoose.Schema({
     password: { type: String, required: true }
 })
 
+
+uniqueValidator.defaults.message = "Erreur lors de l'inscription"
+
 userSchema.plugin(uniqueValidator)
 
 export const User = mongoose.model('User', userSchema)
