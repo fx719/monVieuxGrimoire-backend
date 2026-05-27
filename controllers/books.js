@@ -4,7 +4,7 @@ import sharp from 'sharp'
 
 const fileRenamer = await import('node:crypto')
 
-export const getBooks = (req, res, next) => {
+export const getBooks = (req, res) => {
     try {
         Book.find()
             .then((books) => res.status(200).json(books))
@@ -14,7 +14,7 @@ export const getBooks = (req, res, next) => {
     }
 }
 
-export const getBook = (req, res, next) => {
+export const getBook = (req, res) => {
     try {
         const bookId = req.params.id
 
@@ -25,6 +25,18 @@ export const getBook = (req, res, next) => {
     } catch (error) {
         console.error(error)
     }
+}
+
+
+export const getBestRatedBooks = async (req, res) => {
+
+    try {
+        const bestRated = await Book.find().sort({ averageRating: -1 }).limit(3)
+        res.status(200).json(bestRated)
+    } catch (error) {
+        res.status(400).json(error)
+    }
+
 }
 
 

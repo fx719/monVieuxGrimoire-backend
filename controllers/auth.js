@@ -4,8 +4,9 @@ import jwt from 'jsonwebtoken'
 
 export const signUp = async (req, res) => {
     try {
-        const passwordRegEx = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[!#\$%&\?])/g
-        if (passwordRegEx.test(req.body.password) && req.body.password.length >= 8) {
+        const passwordRegEx = /(?=.*\d)(?=.*[a-zA-Z])(?=.*[!#\$%&\?])/
+        //password length is limited to avoid ReDos
+        if (passwordRegEx.test(req.body.password) && req.body.password.length >= 8 && req.body.password.length <= 50) {
             const hashedPassword = await bcrypt.hash(req.body.password, 10)
 
             const user = new User({
@@ -16,11 +17,11 @@ export const signUp = async (req, res) => {
             await user.save()
             res.status(201).json({ message: "Utilisateur crée avec succès" })
         } else {
-            throw new Error("Le mot de passe doit contenir au moins 8 caractères, dont au moins un signe spécial -$ par exemple-, un chiffre, une lettre minuscule et une lettre majuscule")
+            throw new Error("Le mot de passe doit contenir au moins 8 caractères, dans une limite de 50, dont au moins un signe spécial -$ par exemple-, un chiffre, une lettre minuscule et une lettre majuscule")
         }
 
     } catch (error) {
-        res.status(400).json({ error })
+        res.status(400).json({ error: "Erreur lors de l'inscription de l'utilisateur, le mot de passe doit contenir au moins 8 caractères, dans une limite de 50 , dont au moins un signe spécial -$ par exemple-, un chiffre, une lettre minuscule et une lettre majuscule" })
     }
 
 }
