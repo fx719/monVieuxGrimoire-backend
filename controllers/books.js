@@ -137,3 +137,32 @@ export const modifyBook = (req, res) => {
 
 
 }
+
+export const deleteBook = (req, res) => {
+
+
+    try {
+        Book.findById(req.params.id)
+            .then((book) => {
+                if (book.userId === req.auth.userId) {
+                    const bookCoverPath = book.imageUrl.slice(22)
+                    Book.deleteOne({ _id: req.params.id })
+                        .then(async () => {
+                            await fs.unlink(bookCoverPath)
+                            res.status(200).json({ message: "livre supprimé avec succès" })
+                        })
+                        .catch(error => res.status(400).json(error))
+
+                } else {
+                    res.status(401).json({ message: "Utilisateur non autorisé à effectuer cet action" })
+                }
+
+            })
+            .catch(error => res.status(404).json(error))
+
+    } catch (error) {
+        res.status(400).json(error)
+    }
+
+
+}
