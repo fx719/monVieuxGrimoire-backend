@@ -80,6 +80,46 @@ export const createBook = async (req, res) => {
 }
 
 
+export const rateOtherUserBook = (req, res) => {
+    try {
+        Book.findById(req.params.id)
+            .then(book => {
+
+                if (req.auth.userId === book.userId)
+                    throw new Error("La personne qui a publié l'ouvrage sur le site ne peut pas le noter deux fois")
+
+                if (book.ratings.some(rating => req.auth.userId === rating.userId)) {
+                    throw new Error("Un utilisateur ne peut noter le même livre qu'une seule fois")
+                }
+                if (req.body.rating > 5 || req.body.rating < 1) {
+                    throw new Error('La note attribuée doit être comprise entre 1 et 5')
+                }
+
+                delete req.body.userId
+                const ratingObject = {
+                    userId: req.auth.userId,
+                    grade: req.body.rating
+                }
+                book.ratings.push(ratingObject)
+
+                let ratingsSum = 0
+                for (let rating of book.ratings) {
+                    ratingsSum += rating.grade
+                }
+                book.averageRating = Math.round(ratingsSum / book.ratings.length)
+
+                book.save()
+                    .then(ratedBook => res.status(201).json(ratedBook))
+                    .catch(error => res.status(400).json({ error: error.message }))
+
+            }
+            )
+            .catch(error => res.status(404).json({ error: error.message }))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+}
+
 
 export const modifyBook = (req, res) => {
 
