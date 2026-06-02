@@ -1,9 +1,9 @@
 import { Book } from '../models/Book.js'
-import { fileTypeFromBuffer } from 'file-type'
 import sharp from 'sharp'
 import * as fs from 'node:fs/promises'
+import { prepareBookUpload } from '../services/prepareBookUpload.js'
 
-const fileRenamer = await import('node:crypto')
+
 
 export const getBooks = (req, res) => {
     try {
@@ -44,28 +44,16 @@ export const getBestRatedBooks = async (req, res) => {
 export const createBook = async (req, res) => {
     try {
 
-        const bookCover = req.file
-        const newFileName = fileRenamer.randomUUID()
-        const type = await fileTypeFromBuffer(bookCover.buffer)
+        const createdBook = await prepareBookUpload(req.file.buffer, req, res)
 
-        if (type.mime !== "image/jpg" && type.mime !== "image/jpeg" && type.mime !== "image/png") {
-            res.status(400).json({ error: 'Mauvais format de fichier' })
-        }
 
-        const loggedInUserId = req.auth.userId
-        const bookInfo = JSON.parse(req.body.book)
-        delete bookInfo.userId
-        delete bookInfo.ratings[0].userId
-        bookInfo.userId = loggedInUserId
-        bookInfo.ratings[0].userId = loggedInUserId
         const uploadedBook = new Book({
-            ...bookInfo,
-            imageUrl: `${req.protocol}://${req.get('host')}/images/${newFileName}.webp`
+            ...createdBook.bookObject
         })
 
         uploadedBook.save()
             .then(async (book) => {
-                await sharp(bookCover.buffer).resize(400, 600, { fit: 'outside' }).toFile(`images/${newFileName}.webp`)
+                await sharp(req.file.buffer).resize(400, 600, { fit: 'outside' }).toFile(`images/${createdBook.fileName}.webp`)
                 res.status(201).json({ message: "Livre ajouté avec succès" })
             })
             .catch((error) => {
@@ -133,23 +121,13 @@ export const modifyBook = (req, res) => {
                     if (req.file) {
 
                         const formerFilePath = book.imageUrl.slice(22)
+                        const modifiedBook = await prepareBookUpload(req.file.buffer, req, res)
 
 
-                        const newFileName = fileRenamer.randomUUID()
-                        const type = await fileTypeFromBuffer(req.file.buffer)
-
-                        if (type.mime !== "image/jpg" && type.mime !== "image/jpeg" && type.mime !== "image/png") {
-                            res.status(400).json({ message: 'Mauvais format de fichier' })
-                        }
-                        const bookObject = {
-                            ...JSON.parse(req.body.book),
-                            imageUrl: `${req.protocol}://${req.get('host')}/images/${newFileName}.webp`
-                        }
-                        delete bookObject._userId
-                        Book.updateOne({ _id: bookId }, { ...bookObject })
+                        Book.updateOne({ _id: bookId }, { ...modifiedBook.bookObject })
                             .then(async () => {
-                                await sharp(req.file.buffer).resize(400, 600, { fit: 'outside' }).toFile(`images/${newFileName}.webp`)
-                                console.log(formerFilePath)
+                                await sharp(req.file.buffer).resize(400, 600, { fit: 'outside' }).toFile(`images/${modifiedBook.fileName}.webp`)
+
                                 await fs.rm(formerFilePath)
                                 res.status(201).json({ message: "livre modifié avec succès !" })
                             })
@@ -157,7 +135,7 @@ export const modifyBook = (req, res) => {
 
                     } else {
                         const bookObject = { ...req.body }
-                        delete bookObject._userId
+                        delete bookObject.userId
                         Book.updateOne({ _id: bookId }, { ...bookObject })
                             .then(() => res.status(201).json({ message: "livre modifié avec succès !" }))
                             .catch(error => res.status(400).json(error))
