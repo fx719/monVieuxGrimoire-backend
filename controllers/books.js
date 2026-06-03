@@ -141,7 +141,7 @@ export const modifyBook = (req, res) => {
 
 
                 } else {
-                    res.status(401).json({ message: "utilisateur non autorisé à effectuer cette action" })
+                    res.status(403).json({ message: "403: unauthorized request" })
                 }
             })
             .catch(error => res.status(404).json(error))
@@ -170,7 +170,7 @@ export const deleteBook = (req, res) => {
                         .catch(error => res.status(400).json(error))
 
                 } else {
-                    res.status(401).json({ message: "Utilisateur non autorisé à effectuer cet action" })
+                    res.status(403).json({ message: "403: unauthorized request" })
                 }
 
             })
