@@ -120,14 +120,12 @@ export const modifyBook = (req, res) => {
 
                     if (req.file) {
 
-                        const formerFilePath = book.imageUrl.slice(22)
+                        const formerFilePath = "images" + book.imageUrl.slice(book.imageUrl.lastIndexOf("/"))
                         const modifiedBook = await prepareBookUpload(req.file.buffer, req, res)
-
 
                         Book.updateOne({ _id: bookId }, { ...modifiedBook.bookObject })
                             .then(async () => {
                                 await sharp(req.file.buffer).resize(400, 600, { fit: 'outside' }).toFile(`images/${modifiedBook.fileName}.webp`)
-
                                 await fs.rm(formerFilePath)
                                 res.status(201).json({ message: "livre modifié avec succès !" })
                             })
@@ -161,12 +159,12 @@ export const deleteBook = (req, res) => {
 
     try {
         Book.findById(req.params.id)
-            .then((book) => {
+            .then(async (book) => {
                 if (book.userId === req.auth.userId) {
-                    const bookCoverPath = book.imageUrl.slice(22)
+                    const bookCoverPath = "images" + book.imageUrl.slice(book.imageUrl.lastIndexOf("/"))
+                    await fs.rm(bookCoverPath)
                     Book.deleteOne({ _id: req.params.id })
-                        .then(async () => {
-                            await fs.unlink(bookCoverPath)
+                        .then(() => {
                             res.status(200).json({ message: "livre supprimé avec succès" })
                         })
                         .catch(error => res.status(400).json(error))
