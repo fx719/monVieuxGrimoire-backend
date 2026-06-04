@@ -133,6 +133,15 @@ export const modifyBook = (req, res) => {
 
                     } else {
                         const bookObject = { ...req.body }
+
+                        const bookEntries = Object.entries(bookObject)
+
+                        for (const [key, value] of bookEntries) {
+                            if (typeof value === 'object') {
+                                throw new Error("mauvais type de données")
+                            }
+                        }
+
                         delete bookObject.userId
                         Book.updateOne({ _id: bookId }, { ...bookObject })
                             .then(() => res.status(201).json({ message: "livre modifié avec succès !" }))
@@ -144,7 +153,7 @@ export const modifyBook = (req, res) => {
                     res.status(403).json({ message: "403: unauthorized request" })
                 }
             })
-            .catch(error => res.status(404).json(error))
+            .catch(error => res.status(404).json({ error: "livre non trouvé" }))
 
 
     } catch (error) {
